@@ -1,0 +1,13 @@
+# 科研项目通用忽略（模板 skeleton）
+.cache/
+*.tmp
+~$*
+# 原始大数据不入库（数据清单见 data/dataset-inventory.md，若存在）
+data/raw/
+# 常见中间产物
+*.RData
+# Python 缓存（核验脚本、docx 生成、像素验证等，v4.1）
+__pycache__/
+*.pyc
+# R 默认设备产物：无显式设备时 R 会把图写到当前工作目录（v4.1）
+Rplots.pdf
