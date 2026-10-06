@@ -1,6 +1,6 @@
 # dsh-model-router-local（独立组件）
 
-> **DeepSeek Harness 混合模型路由插件**（本地 fork，v1.0.1，MIT）。
+> **DeepSeek Harness 混合模型路由插件**（本地 fork，v1.0.2，MIT）。
 > 把「思考/计划/讨论」与「检索/执行/干活」分派到不同模型：主会话（Lead）走强模型，一切子代理/Agent Teams 队员走普通模型——机制层强制，不靠模型自觉。
 
 ## 与上游的关系
@@ -17,11 +17,11 @@
 
 | 谁 | 判定 | 默认路由 |
 |---|---|---|
-| planner（主会话：思考/计划/讨论/审阅） | root 会话（无 subagent 标记） | `deepseek-v4-pro` / `max` |
-| executor（子代理/队员：检索/执行/干活） | `origin:"subagent"` 或 `subagentDepth ≥ 1` | `deepseek-flash` / `high` + 报错自动升级 `max`、连续 2 步正常回落 |
+| planner（主会话：思考/计划/讨论/审阅） | root 会话（无 subagent 标记） | **跟随会话选择**（GUI 选 v4-pro / v4.1-flash 均可，插件不改写）；`plannerFollowSession: false` 时固定 `deepseek-v4-pro` / `max` |
+| executor（子代理/队员：检索/执行/干活） | `origin:"subagent"` 或 `subagentDepth ≥ 1` | **绑死** `deepseek-flash` / `high` + 报错自动升级 `max`、连续 2 步正常回落 |
 | vision（带图请求，粘性） | 会话日志出现图片 | `deepseek-flash`（原生多模态） |
 
-改写发生在 DSH `agent/request` 管线最外层（`{ prepend: true }`），对 Agent Teams 队员同样生效（队员会话即 `origin:"subagent"` 的子会话）。
+改写发生在 DSH `agent/request` 管线最外层（`{ prepend: true }`），对 Agent Teams 队员同样生效（队员会话即 `origin:"subagent"` 的子会话）；主对话在 `plannerFollowSession: true`（默认）下**不改写**，用户随时在会话里切换模型。
 
 ## 安装（profile 级，全会话生效）
 
@@ -36,6 +36,7 @@
    ```yaml
    - id: model-router
      config:
+       plannerFollowSession: true   # 主对话跟随会话选择（默认）；false 才用 planner 固定路由
        planner:   { provider: deepseek-official, model: deepseek-v4-pro, reasoningEffort: max }
        executor:
          provider: deepseek-official

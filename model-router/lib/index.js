@@ -43,11 +43,14 @@ const VisionRouteSchema = z.object({
 });
 
 const Config = z.object({
+  // planner 路由仅在 plannerFollowSession=false 时强制；默认 true = 主对话
+  // 跟随会话选择（用户在 GUI 里选 v4-pro 或 v4.1-flash 都生效，本插件不改写）。
   planner: ModelRouteSchema.default({
     provider: "deepseek-official",
     model: "deepseek-v4-pro",
     reasoningEffort: "max",
   }),
+  plannerFollowSession: z.boolean().default(true),
   executor: ModelRouteSchema.default({
     provider: "deepseek-official",
     model: "deepseek-flash",
@@ -73,10 +76,10 @@ function roleFor(agent) {
 }
 
 function routeFor(agent, config) {
-  // This fork supports only strict semantics: the root agent always takes the
-  // planner route. `mode: "plan"` is accepted for config compat and behaves
-  // identically (no plan-mode folding API exists in DSH 0.2.0-rc.2).
-  return roleFor(agent) === "executor" ? config.executor : config.planner;
+  if (roleFor(agent) === "executor") return config.executor;
+  // planner：默认跟随会话选择（返回 undefined = 不改写，GUI 选什么用什么）；
+  // plannerFollowSession=false 时用 planner 配置强制固定。
+  return config.plannerFollowSession ? undefined : config.planner;
 }
 
 function effortFor(route, state) {

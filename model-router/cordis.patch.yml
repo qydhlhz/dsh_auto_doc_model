@@ -5,12 +5,15 @@
     - id: model-router
       name: '@local/dsh-model-router-local'
       config:
-        # planner = 主会话（Lead）：思考/计划/讨论/审阅
+        # plannerFollowSession=true（默认）：主对话**跟随会话选择**——用户在 GUI
+        # 选 v4-pro 或 v4.1-flash 都生效，本插件不改写主对话请求。
+        plannerFollowSession: true
+        # planner 仅作 plannerFollowSession=false 时的固定路由备选
         planner:
           provider: deepseek-official
           model: deepseek-v4-pro
           reasoningEffort: max
-        # executor = 一切子代理 / Agent Teams 队员（origin:"subagent"）：检索/执行/干活
+        # executor = 一切子代理 / Agent Teams 队员（origin:"subagent"）：绑死普通模型
         executor:
           provider: deepseek-official
           model: deepseek-flash
@@ -18,7 +21,7 @@
           escalateOnError: true
           escalateTo: max
           recoverySteps: 2
-        # fork 仅支持 strict 语义（plan 与 strict 等价：root 永远走 planner 路由）
+        # fork 仅支持 strict 语义（plan 与 strict 等价）
         mode: strict
         promptSection: false
         skill: false

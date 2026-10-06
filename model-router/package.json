@@ -1,6 +1,6 @@
 {
   "name": "@local/dsh-model-router-local",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Local fork of dsh-model-router adapted for DSH 0.2.0-rc.2: planner/executor role-based model routing for the DeepSeek Harness (Lead = deepseek-v4-pro, teammates/subagents = deepseek-flash). Forked because upstream 0.7.1 imports dsh-plan-mode.foldPlanMode and dsh-settings.installSettingsSection, which do not exist in DSH 0.2.0-rc.2.",
   "type": "module",
   "main": "lib/index.js",

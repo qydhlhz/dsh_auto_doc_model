@@ -6,7 +6,7 @@
 |---|---|---|
 | `template/` | **科研项目模板包**（v4.4） | 规则正文、项目骨架、脚本、技能三档携带；新项目从这里实例化 |
 | `auto-doc-mode/` | **Auto_Doc 模式**（DSH Agent preset bundle，v1.2） | 把「开局组队 + 定位规则事实源」变成选模式即生效；随包携带 22 个通用技能与 v4.4 规则快照 |
-| `model-router/` | **混合模型路由组件**（独立插件 bundle，v1.0.1，MIT） | 可选环境增强：Lead 走强模型、队员/子代理走普通模型，报错自动升级推理强度 |
+| `model-router/` | **混合模型路由组件**（独立插件 bundle，v1.0.2，MIT） | 可选环境增强：主对话跟随会话选择，队员/子代理绑死普通模型，报错自动升级推理强度 |
 
 ## 一、三件套的职责边界（重要）
 
@@ -35,7 +35,7 @@
 
 ### C. 装混合模型路由（可选，需 DSH 0.2.0-rc.2 实测线）
 
-按 `model-router/README.md` 安装：把 `model-router/` 目录 link 进目标 profile 的 `dsh.profile.bundles`（`@local/dsh-model-router-local`），在 profile 的 `cordis.patch.yml` 加 `- id: model-router` 覆盖行，重启 profile。生效后主会话走 `deepseek-v4-pro`、一切子代理与 Agent Teams 队员走 `deepseek-flash`（队员执行报错自动升级推理强度、连续正常回落；带图请求兜底到多模态模型）。**已知瑕疵**：会话重启后可能看到「model changed → flash」提示，实际请求仍为 planner 路由——以会话日志 `request/header` 为准（详见组件 README）。
+按 `model-router/README.md` 安装：把 `model-router/` 目录 link 进目标 profile 的 `dsh.profile.bundles`（`@local/dsh-model-router-local`），在 profile 的 `cordis.patch.yml` 加 `- id: model-router` 覆盖行，重启 profile。生效后：**主对话跟随会话选择**（GUI 选 `deepseek-v4-pro` 或 `deepseek-v4.1-flash` 都生效，随时可切）；一切子代理与 Agent Teams 队员**绑死** `deepseek-flash`（队员执行报错自动升级推理强度、连续正常回落）；带图请求兜底到多模态模型。**已知瑕疵**：会话重启后可能看到「model changed」提示与实际路由不符——以会话日志 `request/header` 为准（详见组件 README）。
 
 ## 三、环境依赖
 
@@ -89,7 +89,7 @@ med-research-template-v4.4/
 │   ├── tools/precheck.mjs       只读预检
 │   ├── README.md                装/卸/更新与边界说明
 │   └── PROVENANCE.md            快照来源、母版提交号、SHA256 校验
-└── model-router/                混合模型路由组件（v1.0.1，MIT，独立分发）
+└── model-router/                混合模型路由组件（v1.0.2，MIT，独立分发）
     ├── package.json / cordis.patch.yml
     ├── lib/index.js             路由逻辑（DSH agent/request 管线改写）
     ├── README.md                安装 / 配置 / 验收 / 已知瑕疵 / 回退
@@ -104,7 +104,7 @@ med-research-template-v4.4/
 - **模板 v4.1**：据全链实弹测试回填 11 项（一图一张边界、用户决定点五处、工作目录约定、凭证生命周期、预建目录等）。
 - **模板 v4.0**：规则分层——总纲按 `<!--rules:…-->` 标记切片，生成成员只读的自包含 `team/rules/<角色>.md`。
 - **Auto_Doc 模式 v1.2**：对应模板 v4.4，快照与母版逐字节一致（见 `auto-doc-mode/PROVENANCE.md`）。
-- **model-router v1.0.1**：首个随包版本。本地 fork（适配 DSH 0.2.0-rc.2，上游 0.7.1 不兼容）已在本机四轮真实会话实测通过（Lead=Pro、队员=Flash、escalate 升级/回落）。
+- **model-router v1.0.2**：主对话改为**跟随会话选择**（`plannerFollowSession: true` 默认，GUI 选 v4-pro / v4.1-flash 均可，插件不改写主对话）；队员/子代理维持绑死 flash。v1.0.1：首个随包版本，本地 fork（适配 DSH 0.2.0-rc.2，上游 0.7.1 不兼容），已在本机四轮真实会话实测通过（核心路由 + escalate 升级/回落）。
 
 ## 八、已知限制
 

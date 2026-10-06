@@ -99,17 +99,19 @@ v4.2 是**能力扩展 + 措辞修正**类改动（无结构性重排）。已�
 
 ### 机制
 
-- 判定：主会话（root）= planner 路由；`origin:"subagent"` 或 `subagentDepth ≥ 1` 的会话（含 Agent Teams 队员）= executor 路由。
-- 改写：挂 DSH 官方 `agent/request` 请求管线最外层（`{ prepend: true }`），强制改写每次请求的 provider/model/推理强度。
+- 判定：主会话（root）= planner 角色；`origin:"subagent"` 或 `subagentDepth ≥ 1` 的会话（含 Agent Teams 队员）= executor 角色。
+- **主对话不绑死**：`plannerFollowSession: true`（默认）时 planner 角色**不改写**——用户在 GUI 会话里选 `deepseek-v4-pro` 或 `deepseek-v4.1-flash` 都生效，随时可切。
+- **队员/子代理绑死普通模型**：executor 角色在 DSH 官方 `agent/request` 请求管线最外层（`{ prepend: true }`）强制改写 provider/model/推理强度。
 - **escalateOnError**：队员某步工具执行失败（`isError` 或文本 `[exit code: N]`，N≥1）→ 下一请求推理强度自动升到 `escalateTo`，连续 `recoverySteps` 步正常后回落基线。
-- **vision 兜底**：会话出现图片后粘性路由到原生多模态模型（防止 planner 模型无 image 模态时拒收图片）。
+- **vision 兜底**：会话出现图片后粘性路由到原生多模态模型（防止会话选 v4-pro 时无 image 模态拒收图片）。
 
 ### 配置（profile 的 `cordis.patch.yml`）
 
 ```yaml
 - id: model-router
   config:
-    planner:
+    plannerFollowSession: true   # 主对话跟随会话选择（GUI 选 v4-pro / v4.1-flash 均可）
+    planner:                     # 仅 plannerFollowSession=false 时作固定路由
       provider: deepseek-official
       model: deepseek-v4-pro
       reasoningEffort: max
