@@ -1,6 +1,6 @@
 # Auto_Doc 模式（bundle 源）
 
-> 这是一个 **DSH Agent preset（模式）bundle**：把科研模板 v4.3 从「每个项目各自抄一份规则」
+> 这是一个 **DSH Agent preset（模式）bundle**：把科研模板 v4.4 从「每个项目各自抄一份规则」
 > 变成「在 GUI 选模式即生效」。装进 profile 后，新建会话的模式选择器里会出现 **Auto_Doc**。
 
 ## 一、装 / 卸 / 更新
@@ -23,7 +23,7 @@ auto-doc-mode/
 ├── cordis.patch.yml        # preset 声明：id=auto-doc、name=Auto_Doc、order=5 + 插件组成
 ├── rules/                  # 规则快照（会话读它，或读工作区自己的 CLAUDE.md）
 │   ├── AUTO_DOC_persona.md # 本模式规程（persona 正文源，@@RULES@@/@@SKILLS@@ 占位符）
-│   ├── CLAUDE_v4.3.md      # v4.3 总纲全文快照（与 template/TEMPLATE_CLAUDE.md 逐字节一致）
+│   ├── CLAUDE_v4.4.md      # v4.4 总纲全文快照（与 template/TEMPLATE_CLAUDE.md 逐字节一致）
 │   └── team/{roles,rules}/*.md + README.md   # 5 张角色卡 + 6 份自包含角色规则
 ├── skills/                 # 22 个 A 档技能快照（含 team-launcher），挂到技能根 rank 300
 ├── tools/precheck.mjs      # 只读预检（!!js 求值 / 技能形态 / 插件名解析），改完重装前跑
@@ -31,8 +31,8 @@ auto-doc-mode/
 ```
 
 **persona 只放规程，不放总纲正文**：总纲正文若既嵌 persona 又被工作区 `CLAUDE.md` 注入，
-等于每步重复付费。规程「一、规则事实源」条决定：工作区有 v4.3 的 `CLAUDE.md` 就以它为准，
-没有才读本 bundle 的 `rules/CLAUDE_v4.3.md` 快照。
+等于每步重复付费。规程「一、规则事实源」条决定：工作区有 v4.4 的 `CLAUDE.md` 就以它为准，
+没有才读本 bundle 的 `rules/CLAUDE_v4.4.md` 快照。
 
 **插件组成**（沿随包 `standard`/`cordis` 两个 preset 的既有写法）：
 
@@ -49,7 +49,7 @@ auto-doc-mode/
 
 persona 规程要求（也是本模式的价值所在）：
 
-1. **定位规则**：工作区是 v4.3 模板实例 → 以工作区 `CLAUDE.md` 为准；否则读本 bundle 快照。
+1. **定位规则**：工作区是 v4.4 模板实例 → 以工作区 `CLAUDE.md` 为准；否则读本 bundle 快照。
 2. **开局硬要求**：跑 `scripts\env_check.ps1` → 读 `Claude_memory.md` 摘要与 `team/board.md`
    → 调 `team-launcher` 装配 5 角色（lead / lit-agent / analysis-agent / figure-writer / auditor）
    → 建卡并**显式唤醒**负责人。**未装配不得开始检索/分析/出图/写作。**
@@ -74,7 +74,7 @@ persona 规程要求（也是本模式的价值所在）：
   `template/README.md` 实例化：`team-launcher` 硬依赖项目内 `team/`（缺则停下要求先实例化），
   persona 开局硬要求第①步的 `scripts\env_check.ps1` 也要项目内有才跑得动。模式省下的是
   「每个项目重复携带 A 档技能 + 每个会话重读总纲」。
-- **快照一致性复核（2026-10-04）**：`rules/CLAUDE_v4.3.md` 与 `template/TEMPLATE_CLAUDE.md` SHA256
-  一致（`D36D91EA…`）；6 份角色规则、5 张角色卡、22 个 A 档技能与 `template/skeleton/` 逐文件比对
-  **0 不一致**；`team-launcher` 三处副本（本 bundle / `template/skeleton/.dsh/skills/` / `$DSH_HOME\skills\`）
-  SHA256 一致（`66098C73…`）；唯一差异是母版 `.dsh/skills/VENDORED.md` 按 `PROVENANCE.md` 说明有意未复制。
+- **快照一致性复核（2026-10-06，v4.4 刷新）**：`rules/CLAUDE_v4.4.md` 与 `template/TEMPLATE_CLAUDE.md` SHA256
+  一致（`09538E48…`）；v4.4 规则正文零改动（仅头部版本行与「混合模型路由」说明行），6 份角色规则重新生成后
+  `build_rules.ps1 -Check` = **CHECK OK**；22 个 A 档技能未动；`team-launcher` 三处副本未动。
+  （历史复核 2026-10-04：v4.3 快照 `D36D91EA…` 一致、0 不一致、`66098C73…` 一致。）

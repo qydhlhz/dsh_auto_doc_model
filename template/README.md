@@ -1,6 +1,7 @@
 # 科研项目模板 — 初始化清单
 
-> **模板版本：v4.3（2026-10-04）**（与 TEMPLATE_CLAUDE.md 头部版本一致，随模板变更同步递增）。
+> **模板版本：v4.4（2026-10-06）**（与 TEMPLATE_CLAUDE.md 头部版本一致，随模板变更同步递增）。
+> v4.4 变更（混合模型路由，环境增强）：① 新增可选增强「混合模型路由」——Lead（思考/计划/讨论）走强模型 `deepseek-v4-pro`、一切队员与子代理（检索/执行/干活）走普通模型 `deepseek-flash`，队员执行报错自动升级推理强度、连续正常后回落，带图请求兜底到原生多模态模型；② `env_check.ps1` 新增**提示级**检测（不阻断、不进判定）；③ 规则正文零改动（模型分派是 DSH 环境层机制，与规则正交）。
 > v4.3 变更（去机器指纹，具备对外分发条件）：① 清除包内 4 处本机指纹——`skeleton/.dsh/skills/VENDORED.md` 与 `skills/bio-library/SKILL.md` 的本机用户目录路径改为 `$DSH_HOME` / `%USERPROFILE%` 变量表述；② `skeleton/scripts/env_check.ps1` 的 R 探测候选去掉机器专属盘符路径，改为通用安装位置 + 环境变量 `R_HOME` 可指定；③ Auto_Doc 模式随包预检脚本 `tools/precheck.mjs` 的插件解析候选改为按 `APPDATA` 推导，不再写死用户名路径。**包内无任何密钥、无个人身份信息**（2026-10-04 全包扫描：密钥形态 0 命中、真名/手机号/邮箱/内网 IP 0 命中）。
 > v4.2 变更（技能分派与随包携带）：① 新增**技能三档携带**——A 档 22 个技能进 `skeleton/.dsh/skills/`（随项目自动携带）、B 档 8 个技能进 `template/skills/`（随包携带、`-Install` 按需安装）、C 档（bio 真库 561 个/15.6 MB）保持环境依赖；② 新增 `scripts/install_skills.ps1`（安装/刷新/漂移检查，**非门禁**）；③ 12 个新技能按职能分派给 5 角色（角色卡 ④ 节重写）；④ §12 技能条重写：**删除写死的"技能根 33 个"**，新增来源优先级、"携带≠授权"、同义技能合并、环境依赖标注四条规则；⑤ **修正 4 处带命名空间前缀的技能名**（`superpowers:brainstorming`、`nature-skills:nature-figure`、`nature-skills:nature-writing` —— 正文曾教人用错的调用方式）；⑥ `lead` 禁用清单由"无"改为生产类硬约束。
 > v4.1 变更（据 2026-10-01 v4.0 全链实弹测试的 D1–D13）：① 明确「一图一张」的文件级/面板级边界（多面板图允许，≤3 面板且须在出图规划声明）；② 用户决定点由三处扩为**五处**（补「出图规划确认」「手稿结构确认」，可与计划书批准合并汇报）；③ 新增**工作目录约定**（一律项目根绝对路径；`scripts/` 两脚本自带项目根自检）；④ `env_check.ps1` 关键包分**必需/可选**，可选缺失不再误判「需降级」；⑤ 写作用域补「仓库根配置→lead 独占，且须单独提交」；⑥ 「原始响应/中间凭证的生命周期须声明」；⑦ 铁律 12 由「数值」扩为「数值/计数/条目数」；⑧ skeleton 预建 `assets/`、`data/`、`output/*`；⑨ `.gitignore` 补 `__pycache__/`、`*.pyc`、`Rplots.pdf`；⑩ 交接单落盘位置明确（成员写进自己产物末尾，由 lead 归档）；⑪ 「首次产出即落 `v1/`」。
@@ -91,3 +92,55 @@ v4.2 是**能力扩展 + 措辞修正**类改动（无结构性重排）。已�
 5. **重新生成规则**：项目根跑 `scripts\build_rules.ps1`，再跑 `-Check` → 必须 `CHECK OK`。
 6. **按需装 B 档**：`install_skills.ps1 -Install -Source <模板包>\skills`（`nature-*` + `bio-library`，约 29.8 MB）。
 7. **行为变更**：`lead` 禁用清单不再是"无"；`tdd` 取代 `test-driven-development`；`code-review` 在 `analysis-agent` 处只作自审，**不得替代** `auditor`。
+
+## 混合模型路由（可选增强，v4.4 起）
+
+把「思考/计划/讨论」与「检索/执行/干活」分派到不同模型：**Lead 会话走强模型，一切队员/子代理走普通模型**——机制层强制，不靠模型自觉。
+
+### 机制
+
+- 判定：主会话（root）= planner 路由；`origin:"subagent"` 或 `subagentDepth ≥ 1` 的会话（含 Agent Teams 队员）= executor 路由。
+- 改写：挂 DSH 官方 `agent/request` 请求管线最外层（`{ prepend: true }`），强制改写每次请求的 provider/model/推理强度。
+- **escalateOnError**：队员某步工具执行失败（`isError` 或文本 `[exit code: N]`，N≥1）→ 下一请求推理强度自动升到 `escalateTo`，连续 `recoverySteps` 步正常后回落基线。
+- **vision 兜底**：会话出现图片后粘性路由到原生多模态模型（防止 planner 模型无 image 模态时拒收图片）。
+
+### 配置（profile 的 `cordis.patch.yml`）
+
+```yaml
+- id: model-router
+  config:
+    planner:
+      provider: deepseek-official
+      model: deepseek-v4-pro
+      reasoningEffort: max
+    executor:
+      provider: deepseek-official
+      model: deepseek-flash
+      reasoningEffort: high
+      escalateOnError: true
+      escalateTo: max
+      recoverySteps: 2
+    mode: strict
+    promptSection: false
+    skill: false
+    vision:
+      enabled: true
+      provider: deepseek-official
+      model: deepseek-flash
+```
+
+实现为本地 bundle `@local/dsh-model-router-local`（母版工作区 `output/dsh-model-router-local/`，适配 DSH 0.2.0-rc.2；上游 `dsh-model-router` 0.7.1 与本版本 DSH 不兼容：其依赖的 `foldPlanMode`/`installSettingsSection` 在 0.2.0-rc.2 不存在）。安装：把 bundle link 进 profile 的 `dsh.profile.bundles`（`@local/dsh-model-router-local`，dependencies 用 `link:<bundle 目录>`，与 `@local/dsh-auto-doc` 同形态），重启 App 生效。
+
+### 验收
+
+```bash
+# 1) 队员侧：统计队员会话 assistant/message 的 model（应全 deepseek-flash）
+zstd -d -c "$DSH_HOME"/sessions/<workspace>/<session>/session.v4.jsonl.zstd \
+  | grep '"type":"assistant/message"' | grep -o '"model":"deepseek-[a-z-]*"' | sort | uniq -c
+# 2) escalate：队员执行失败步后，下一请求 request/header 的 reasoningEffort 应变 max、回落 high
+```
+
+### 已知瑕疵与回退
+
+- **模型切换提示误导**：会话重启后 DSH 的模型选择层可能注入「model changed → flash」提示，而实际请求仍被 planner 路由改写为强模型——以 `request/header` 日志为准，该提示是选项层噪音。
+- **回退**：从 profile 的 bundles 与 dependencies 中移除 `@local/dsh-model-router-local`、删除 `cordis.patch.yml` 的 `- id: model-router` 覆盖行、重启，即回到「全员继承会话模型」。

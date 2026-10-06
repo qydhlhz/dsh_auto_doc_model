@@ -97,6 +97,19 @@ if ($py) {
 $gitv = (& git --version 2>$null)
 if ($gitv) { $lines.Add("| git | $gitv | 可用 |") } else { $lines.Add("| git | 未找到 | 降级：改用时间戳核对越界 |"); $blockers.Add("git 不可用：越界检测降级为产出清单 + 时间戳") }
 
+# 4.5) 混合模型路由检测（v4.4 起，提示级：不阻断、不进判定）
+$dshHome = if ($env:DSH_HOME) { $env:DSH_HOME } else { Join-Path $env:USERPROFILE '.dsh' }
+$routerProfiles = @()
+foreach ($p in 'desktop', 'web') {
+  $patch = Join-Path $dshHome "profiles\$p\cordis.patch.yml"
+  if ((Test-Path $patch) -and (Select-String -Path $patch -Pattern 'id:\s*model-router' -Quiet)) { $routerProfiles.Add($p) }
+}
+if ($routerProfiles.Count -gt 0) {
+  $lines.Add("| 混合模型路由 | 已启用（profile：$($routerProfiles -join ', ')） | 提示级：Lead=强模型、队员=普通模型，见 README「混合模型路由」节 |")
+} else {
+  $lines.Add("| 混合模型路由 | 未启用 | 提示级：可选增强，配置与验收见 README「混合模型路由」节 |")
+}
+
 # 5) 判定
 $lines.Add("")
 $lines.Add("## 判定")

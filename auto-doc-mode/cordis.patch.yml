@@ -1,10 +1,10 @@
 # ============================================================================
-# Auto_Doc 模式（Agent preset）—— 科研模板 v4.3 的会话形态
+# Auto_Doc 模式（Agent preset）—— 科研模板 v4.4 的会话形态
 # ----------------------------------------------------------------------------
 # 装法：plugin_manager → action: install_bundle，target = 本目录绝对路径。
 #   Loader 行 id = preset-auto-doc ｜ 会话 preset id = auto-doc ｜ 显示名 = Auto_Doc
 # 随包携带（相对本目录）：
-#   rules/   AUTO_DOC_persona.md（本模式规程）+ v4.3 总纲全文快照 + 5 张角色卡
+#   rules/   AUTO_DOC_persona.md（本模式规程）+ v4.4 总纲全文快照 + 5 张角色卡
 #            + 6 份角色规则 + team/README.md
 #   skills/  22 个 A 档技能（含 team-launcher）→ 经 skill-filesystem 的
 #            customSkillDirs 挂到技能根 rank 300（项目根/用户根照常保留）
@@ -21,7 +21,7 @@
         id: auto-doc
         name: Auto_Doc
         description: >-
-          科研模板 v4.3 常驻模式：5 角色团队制 + 规则快照 + 22 个随包技能；
+          科研模板 v4.4 常驻模式：5 角色团队制 + 规则快照 + 22 个随包技能；
           开局先装配团队、建卡派活，未装配不得开始检索/分析/出图。
         order: 5
         plugins:

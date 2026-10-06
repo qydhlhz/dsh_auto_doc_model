@@ -1,9 +1,9 @@
 {
   "name": "@local/dsh-auto-doc",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
-  "description": "Auto_Doc 模式：科研模板 v4.3 的 Agent preset（规则快照 + 22 个随包技能 + 团队制规程）",
+  "description": "Auto_Doc 模式：科研模板 v4.4 的 Agent preset（规则快照 + 22 个随包技能 + 团队制规程）",
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"

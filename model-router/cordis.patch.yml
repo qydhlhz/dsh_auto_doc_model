@@ -1,0 +1,29 @@
+# dsh-model-router-local bundle patch（本地 fork，适配 DSH 0.2.0-rc.2）
+# 只插入 model-router 一行；不碰 llm-deepseek 模型目录与 attachment-local。
+# profile 层的 `- id: model-router` 覆盖行（desktop/web 的 cordis.patch.yml）仍可定位本行。
+- insert:
+    - id: model-router
+      name: '@local/dsh-model-router-local'
+      config:
+        # planner = 主会话（Lead）：思考/计划/讨论/审阅
+        planner:
+          provider: deepseek-official
+          model: deepseek-v4-pro
+          reasoningEffort: max
+        # executor = 一切子代理 / Agent Teams 队员（origin:"subagent"）：检索/执行/干活
+        executor:
+          provider: deepseek-official
+          model: deepseek-flash
+          reasoningEffort: high
+          escalateOnError: true
+          escalateTo: max
+          recoverySteps: 2
+        # fork 仅支持 strict 语义（plan 与 strict 等价：root 永远走 planner 路由）
+        mode: strict
+        promptSection: false
+        skill: false
+        # vision：带图请求兜底到原生多模态模型（v4-pro 无 image 模态）
+        vision:
+          enabled: true
+          provider: deepseek-official
+          model: deepseek-flash

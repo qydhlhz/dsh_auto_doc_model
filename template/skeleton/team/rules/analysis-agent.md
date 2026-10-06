@@ -1,7 +1,7 @@
-<!-- 自动生成，勿手改。源：CLAUDE.md@D36D91EAE5EE + team/roles/analysis-agent.md@225095CDC5DD
+<!-- 自动生成，勿手改。源：CLAUDE.md@09538E48C1A6 + team/roles/analysis-agent.md@225095CDC5DD
      生成命令：powershell -File scripts\build_rules.ps1
      校验命令：powershell -File scripts\build_rules.ps1 -Check
-     生成时间：2026-10-04 13:49:15 -->
+     生成时间：2026-10-06 18:51:25 -->
 
 # analysis-agent 执行规则（自包含，本文件即该角色的全部规则）
 
